@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Schedule - VR Summit</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(200px, 80%);
+            height: 4px;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed, #ff6b6b);
+            border-radius: 2px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(0, 212, 255, 0.5); }
+            to { box-shadow: 0 0 30px rgba(124, 58, 237, 0.8); }
+        }
+        
+        .main-title {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, #00d4ff, #7c3aed, #ff6b6b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-top: 30px;
+            text-transform: uppercase;
+            letter-spacing: clamp(1px, 0.5vw, 3px);
+        }
+        
+        .subtitle {
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            color: #8b949e;
+            margin-top: 10px;
+            font-weight: 300;
+        }
+        
+        .timeline {
+            position: relative;
+            margin-top: 50px;
+            width: 100%;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #00d4ff, #7c3aed, #ff6b6b);
+            border-radius: 2px;
+            z-index: 0;
+        }
+        
+        .event-card {
+            position: relative;
+            margin: 40px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .event-card {
+            justify-content: center;
+        }
+        
+        .event-content {
+            background: rgba(22, 33, 62, 0.9);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            padding: clamp(20px, 3vw, 30px);
+            width: min(500px, calc(90vw - 40px));
+            max-width: calc(100vw - 80px);
+            min-height: 200px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .event-content:hover {
+            transform: translateY(-10px);
+            border-color: rgba(124, 58, 237, 0.6);
+            box-shadow: 0 20px 40px rgba(124, 58, 237, 0.3);
+        }
+        
+        .event-content::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00d4ff, #7c3aed, #ff6b6b);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .event-content:hover::before {
+            opacity: 0.3;
+        }
+        
+        .event-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+        
+        .event-content:hover .event-actions {
+            opacity: 1;
+        }
+        
+        .action-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .edit-btn {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+            border: 1px solid rgba(0, 212, 255, 0.5);
+        }
+        
+        .edit-btn:hover {
+            background: rgba(0, 212, 255, 0.4);
+            transform: scale(1.1);
+        }
+        
+        .delete-btn {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.5);
+        }
+        
+        .delete-btn:hover {
+            background: rgba(255, 107, 107, 0.4);
+            transform: scale(1.1);
+        }
+        
+        .event-description {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .description-title {
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            color: #8b949e;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .description-text {
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            color: #ffffff;
+            line-height: 1.6;
+            opacity: 0.9;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+        
+        .description-text a {
+            color: #00d4ff;
+            text-decoration: none;
+            border-bottom: 1px dotted rgba(0, 212, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .description-text a:hover {
+            color: #ffffff;
+            border-bottom-color: #ffffff;
+            background: rgba(0, 212, 255, 0.1);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        
+        .event-date {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: #00d4ff;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .event-date::before {
+            content: '◦';
+            margin-right: 10px;
+            font-size: 1.5rem;
+            color: #7c3aed;
+        }
+        
+        .event-title {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #ffffff;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.3;
+        }
+        
+        .goal-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .goal-title {
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            color: #8b949e;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .goal-content {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .goal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.2), transparent);
+            animation: goalShimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes goalShimmer {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+        
+        .goal-text {
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            color: #ffffff;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+            line-height: 1.5;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .goal-text::before {
+            content: '🎯';
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .add-event-section {
+            margin-top: 60px;
+            text-align: center;
+            padding: clamp(30px, 5vw, 40px);
+            background: rgba(22, 33, 62, 0.5);
+            border: 2px dashed rgba(124, 58, 237, 0.5);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .add-event-section:hover {
+            border-color: rgba(0, 212, 255, 0.7);
+            background: rgba(22, 33, 62, 0.8);
+            transform: scale(1.02);
+        }
+        
+        .add-event-text {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            color: #8b949e;
+            margin-bottom: 20px;
+        }
+        
+        .add-event-icon {
+            font-size: clamp(2rem, 5vw, 3rem);
+            color: #7c3aed;
+            margin-bottom: 15px;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .add-event-section:hover .add-event-icon {
+            transform: rotate(90deg);
+            color: #00d4ff;
+        }
+        
+        .tech-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(124, 58, 237, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124, 58, 237, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            margin: 5% auto;
+            padding: clamp(20px, 4vw, 30px);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            width: min(90%, 500px);
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .close:hover {
+            color: #00d4ff;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00d4ff;
+            font-weight: 500;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(22, 33, 62, 0.8);
+            border: 2px solid rgba(124, 58, 237, 0.3);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        
+        .form-button {
+            background: linear-gradient(45deg, #00d4ff, #7c3aed);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .form-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .event-content {
+                width: calc(100vw - 100px);
+                max-width: none;
+                min-width: 280px;
+            }
+            
+            .timeline::before {
+                left: 30px;
+            }
+            
+            .event-card {
+                justify-content: center !important;
+                padding-left: 60px !important;
+                padding-right: 60px !important;
+            }
+            
+            .add-event-section {
+                margin-left: 20px;
+                margin-right: 20px;
+                max-width: none;
+                width: calc(100vw - 80px);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .event-content {
+                width: calc(100vw - 80px);
+                min-width: 250px;
+            }
+            
+            .timeline::before {
+                left: 20px;
+            }
+            
+            .event-card {
+                justify-content: center !important;
+                padding-left: 50px !important;
+                padding-right: 50px !important;
+            }
+            
+            .add-event-section {
+                margin-left: 10px;
+                margin-right: 10px;
+                width: calc(100vw - 60px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tech-grid"></div>
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">Event Schedule</h1>
+            <p class="subtitle">Technology Events Timeline</p>
+        </div>
+        
+        <div class="timeline" id="timeline">
+            <div class="event-card">
+                <div class="event-content">
+                    <div class="event-actions">
+                        <button type="button" class="action-btn edit-btn" onclick="editEvent(this)" title="編集">✏️</button>
+                        <button type="button" class="action-btn delete-btn" onclick="deleteEvent(this)" title="削除">🗑️</button>
+                    </div>
+                    <div class="event-date">2024.08.29</div>
+                    <h2 class="event-title">VR サミット</h2>
+                    <div class="event-description">
+                        <div class="description-title">説明</div>
+                        <div class="description-text">最新のVR技術とゲーム開発について話し合うサミットイベント</div>
+                    </div>
+                    <div class="goal-section">
+                        <div class="goal-title">プロジェクト目標</div>
+                        <div class="goal-content">
+                            <div class="goal-text">MVP版を作成完了</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="add-event-section" onclick="openModal()">
+                <span class="add-event-icon">⊕</span>
+                <div class="add-event-text">新しいイベントを追加</div>
+                <p style="color: #6b7280; font-size: clamp(0.8rem, 1.5vw, 0.9rem);">
+                    クリックしてイベントを追加
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 style="color: #00d4ff; margin-bottom: 20px; font-family: 'Orbitron', monospace;">新しいイベントを追加</h2>
+            
+            <div class="form-group">
+                <label class="form-label">日付</label>
+                <input type="date" id="eventDate" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">イベント名</label>
+                <input type="text" id="eventTitle" class="form-input" placeholder="イベント名を入力">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">説明</label>
+                <textarea id="eventDescription" class="form-input" placeholder="イベントの説明を入力" rows="3" style="resize: vertical; min-height: 80px;"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">プロジェクト目標</label>
+                <input type="text" id="eventGoal" class="form-input" placeholder="例：MVP版を作成完了">
+            </div>
+            
+            <button class="form-button" onclick="addEvent()">イベントを追加</button>
+        </div>
+    </div>
+
+    <script>
+        let editingEvent = null;
+        let events = [];
+        
+        // テキスト内のURLを自動でリンクに変換
+        function linkifyText(text) {
+            if (!text) return '';
+            
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+        }
+        
+        // データをlocalStorageに保存
+        function saveEvents() {
+            try {
+                localStorage.setItem('vrEvents', JSON.stringify(events));
+            } catch (error) {
+                console.error('保存エラー:', error);
+            }
+        }
+        
+        // localStorageからデータを読み込み
+        function loadEvents() {
+            try {
+                const savedEvents = localStorage.getItem('vrEvents');
+                if (savedEvents) {
+                    events = JSON.parse(savedEvents);
+                } else {
+                    // 初回時は既存のHTMLからイベントを読み込み
+                    saveEventsFromHTML();
+                }
+            } catch (error) {
+                console.error('読み込みエラー:', error);
+                saveEventsFromHTML();
+            }
+        }
+        
+        // HTMLからイベントを読み取って配列に保存
+        function saveEventsFromHTML() {
+            const timeline = document.getElementById('timeline');
+            const eventCards = Array.from(timeline.querySelectorAll('.event-card'));
+            events = [];
+            
+            eventCards.forEach(card => {
+                const date = card.querySelector('.event-date').textContent;
+                const title = card.querySelector('.event-title').textContent;
+                const descElement = card.querySelector('.description-text');
+                const description = descElement ? descElement.textContent : '';
+                const goalElement = card.querySelector('.goal-text');
+                const goal = goalElement ? goalElement.textContent : '';
+                
+                events.push({ date, title, description, goal });
+            });
+            saveEvents();
+        }
+        
+        // HTMLにイベントを復元する
+        function loadEventsToHTML() {
+            const timeline = document.getElementById('timeline');
+            const addSection = timeline.querySelector('.add-event-section');
+            
+            // 既存のイベントカードを全削除
+            const existingCards = Array.from(timeline.querySelectorAll('.event-card'));
+            existingCards.forEach(card => card.remove());
+            
+            // 保存されたイベントを追加
+            events.forEach(eventData => {
+                createEventCard(eventData, timeline, addSection);
+            });
+        }
+        
+        function createEventCard(eventData, timeline, addSection) {
+            const eventCard = document.createElement('div');
+            eventCard.className = 'event-card';
+            
+            const descSection = eventData.description ? `
+                <div class="event-description">
+                    <div class="description-title">説明</div>
+                    <div class="description-text">${linkifyText(eventData.description)}</div>
+                </div>
+            ` : '';
+            
+            const goalSection = eventData.goal ? `
+                <div class="goal-section">
+                    <div class="goal-title">プロジェクト目標</div>
+                    <div class="goal-content">
+                        <div class="goal-text">${linkifyText(eventData.goal)}</div>
+                    </div>
+                </div>
+            ` : '';
+            
+            eventCard.innerHTML = `
+                <div class="event-content">
+                    <div class="event-actions">
+                        <button type="button" class="action-btn edit-btn" onclick="editEvent(this)" title="編集">✏️</button>
+                        <button type="button" class="action-btn delete-btn" onclick="deleteEvent(this)" title="削除">🗑️</button>
+                    </div>
+                    <div class="event-date">${eventData.date}</div>
+                    <h2 class="event-title">${eventData.title}</h2>
+                    ${descSection}
+                    ${goalSection}
+                </div>
+            `;
+            
+            timeline.insertBefore(eventCard, addSection);
+        }
+        
+        // 日付順に並び替え
+        function sortEventsByDate() {
+            events.sort((a, b) => {
+                const dateA = new Date(a.date.replace(/\./g, '/'));
+                const dateB = new Date(b.date.replace(/\./g, '/'));
+                return dateA - dateB;
+            });
+            loadEventsToHTML();
+        }
+        
+        // 初期化：保存されたデータまたはHTMLからイベントを読み込み
+        window.addEventListener('DOMContentLoaded', function() {
+            loadEvents();
+            loadEventsToHTML();
+        });
+        
+        function openModal() {
+            editingEvent = null;
+            document.querySelector('.modal-content h2').textContent = '新しいイベントを追加';
+            document.querySelector('.form-button').textContent = 'イベントを追加';
+            document.getElementById('eventModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('eventModal').style.display = 'none';
+            clearForm();
+            editingEvent = null;
+        }
+        
+        function clearForm() {
+            document.getElementById('eventDate').value = '';
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventDescription').value = '';
+            document.getElementById('eventGoal').value = '';
+        }
+        
+        function addEvent() {
+            const date = document.getElementById('eventDate').value;
+            const title = document.getElementById('eventTitle').value;
+            const description = document.getElementById('eventDescription').value;
+            const goal = document.getElementById('eventGoal').value;
+            
+            if (!date || !title) {
+                alert('日付とイベント名は必須です');
+                return;
+            }
+            
+            const formattedDate = new Date(date).toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            }).replace(/\//g, '.');
+            
+            if (editingEvent) {
+                // 編集モード
+                const eventCard = editingEvent.closest('.event-card');
+                const eventIndex = Array.from(document.querySelectorAll('.event-card')).indexOf(eventCard);
+                
+                events[eventIndex] = {
+                    date: formattedDate,
+                    title: title,
+                    description: description,
+                    goal: goal
+                };
+            } else {
+                // 新規追加モード
+                events.push({
+                    date: formattedDate,
+                    title: title,
+                    description: description,
+                    goal: goal
+                });
+            }
+            
+            closeModal();
+            
+            // 自動で日付順に並び替えて表示
+            sortEventsByDate();
+            
+            // 変更を保存
+            saveEvents();
+        }
+        
+        function editEvent(button) {
+            editingEvent = button;
+            const eventContent = button.closest('.event-content');
+            
+            // フォームに現在の値を設定
+            const dateText = eventContent.querySelector('.event-date').textContent;
+            const title = eventContent.querySelector('.event-title').textContent;
+            const descElement = eventContent.querySelector('.description-text');
+            const description = descElement ? descElement.textContent : '';
+            const goalElement = eventContent.querySelector('.goal-text');
+            const goal = goalElement ? goalElement.textContent : '';
+            
+            // 日付を yyyy-mm-dd 形式に変換
+            const dateParts = dateText.split('.');
+            const formattedDateForInput = `${dateParts[0]}-${dateParts[1]}-${dateParts[2]}`;
+            
+            document.getElementById('eventDate').value = formattedDateForInput;
+            document.getElementById('eventTitle').value = title;
+            document.getElementById('eventDescription').value = description;
+            document.getElementById('eventGoal').value = goal;
+            
+            // モーダルのタイトルとボタンテキストを変更
+            document.querySelector('.modal-content h2').textContent = 'イベントを編集';
+            document.querySelector('.form-button').textContent = '変更を保存';
+            
+            document.getElementById('eventModal').style.display = 'block';
+        }
+        
+        function deleteEvent(button) {
+            if (confirm('このイベントを削除しますか？')) {
+                const eventCard = button.closest('.event-card');
+                const eventIndex = Array.from(document.querySelectorAll('.event-card')).indexOf(eventCard);
+                
+                // メモリから削除
+                events.splice(eventIndex, 1);
+                
+                // HTMLから削除して再描画
+                loadEventsToHTML();
+                
+                // 変更を保存
+                saveEvents();
+            }
+        }
+        
+        // Modal outside click close
+        window.onclick = function(event) {
+            const modal = document.getElementById('eventModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
